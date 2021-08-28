@@ -18,7 +18,7 @@ export async function createClient(): Promise<DiscordIPC> {
   client[_header] = new Uint8Array(8);
   client[_headerView] = new DataView(client[_header].buffer);
   client[_writers] = new Set();
-  client[_eventLoop] = (async function () {
+  client[_eventLoop] = (async () => {
     try {
       while (true) {
         if (client[_breakEventLoop] === true) break;
@@ -30,8 +30,8 @@ export async function createClient(): Promise<DiscordIPC> {
   return client;
 }
 
-export interface FrameIPCEvent<T = any> {
-  type: "frame";
+export interface PacketIPCEvent<T = any> {
+  type: "packet";
   op: OpCode;
   data: T;
 }
@@ -40,7 +40,7 @@ export interface CloseIPCEvent {
   type: "close";
 }
 
-export type IPCEvent = FrameIPCEvent | CloseIPCEvent;
+export type IPCEvent = PacketIPCEvent | CloseIPCEvent;
 
 export class DiscordIPC {
   [_ipcHandle]!: Deno.Conn;
@@ -52,22 +52,24 @@ export class DiscordIPC {
     throw new TypeError("Use `createClient` instead of `new DiscordIPC`");
   }
 
-  async login(client_id: string) {
-    await this.send(OpCode.HANDSHAKE, { v: "1", client_id });
+  async login(clientID: string) {
+    await this.send(OpCode.HANDSHAKE, { v: "1", client_id: clientID });
   }
 
   [_header]!: Uint8Array;
   [_headerView]!: DataView;
 
-  async send(op: OpCode, payload: any) {
+  async send<T>(op: OpCode, payload: T) {
     let nonce: string;
-    if (typeof payload === "object" && payload !== null) {
-      if (typeof payload.nonce === "undefined") {
-        nonce = crypto.randomUUID();
-        payload.nonce = nonce;
-      } else {
-        nonce = payload.nonce;
-      }
+    if (
+      typeof payload === "object" 
+      && payload !== null 
+      && typeof payload.nonce === "undefined"
+    ) {
+      nonce = crypto.randomUUID();
+      payload.nonce = nonce;
+    } else {
+      nonce = payload.nonce;
     }
     const data = encode(op, JSON.stringify(payload));
     await this[_ipcHandle].write(data);
@@ -106,7 +108,7 @@ export class DiscordIPC {
     const data = new Uint8Array(payloadLength);
     if (await this[_ipcHandle]?.read(data) !== payloadLength) return;
     const payload = new TextDecoder().decode(data);
-    this[_emit]({ type: "frame", op, data: JSON.parse(payload) });
+    this[_emit]({ type: "packet", op, data: JSON.parse(payload) });
   }
 
   [Symbol.asyncIterator](): AsyncIterableIterator<IPCEvent> {
