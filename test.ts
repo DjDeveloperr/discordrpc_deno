@@ -23,6 +23,7 @@ await client.login(CLIENT_ID);
               grant_type: "authorization_code",
             },
           });
+          await client.setActivity({ details: "Deno 🦕", state: "Testing..." });
         }
       }
     }
