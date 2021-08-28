@@ -19,7 +19,7 @@ await client.login(CLIENT_ID);
             cmd: "AUTHORIZE",
             args: {
               client_id: CLIENT_ID,
-              scopes: "rpc",
+              scopes: "rpc messages.read",
               grant_type: "authorization_code",
             },
           });

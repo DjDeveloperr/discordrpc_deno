@@ -72,9 +72,7 @@ export class DiscordIPC {
       nonce = payload.nonce;
     }
     const data = encode(op, JSON.stringify(payload));
-    console.log("write...");
     await this[_ipcHandle].write(data);
-    console.log("written!");
     return nonce;
   }
 
@@ -104,14 +102,21 @@ export class DiscordIPC {
   }
 
   async [_read]() {
-    console.log("read header");
-    if (await this[_ipcHandle].read(this[_header]) !== 8) return;
+    let headerRead = 0;
+    while(headerRead < 8) {
+      const read = await this[_ipcHandle].read(this[_header].subarray(headerRead));
+      if (read === null) throw new Error("Connection closed");
+      headerRead = read;
+    }
     const op = this[_headerView].getInt32(0, true) as OpCode;
     const payloadLength = this[_headerView].getInt32(4, true);
     const data = new Uint8Array(payloadLength);
-    console.log("read body", payloadLength);
-    if (await this[_ipcHandle].read(data) !== payloadLength) return;
-    console.log("read complete");
+    let bodyRead = 0;
+    while (bodyRead < payloadLength) {
+      const read = await this[_ipcHandle].read(data.subarray(bodyRead));
+      if (read === null) throw new Error("Connection closed");
+      bodyRead = read;
+    }
     const payload = new TextDecoder().decode(data);
     this[_emit]({ type: "packet", op, data: JSON.parse(payload) });
   }
