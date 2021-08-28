@@ -19,11 +19,10 @@ await client.login(CLIENT_ID);
             cmd: "AUTHORIZE",
             args: {
               client_id: CLIENT_ID,
-              scopes: "rpc messages.read",
+              scopes: "rpc",
               grant_type: "authorization_code",
             },
           });
-          await client.setActivity({ details: "Deno 🦕", state: "Testing..." });
         }
       }
     }
