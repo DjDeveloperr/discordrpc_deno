@@ -17,6 +17,7 @@ await client.login(CLIENT_ID);
       if (cmd === "DISPATCH") {
         const evt = event.data.evt;
         if (evt === "READY") {
+          console.log("Got READY, sending AUTHORIZE");
           await client.send(OpCode.FRAME, {
             cmd: "AUTHORIZE",
             args: {
@@ -29,6 +30,8 @@ await client.login(CLIENT_ID);
       } else if (cmd === "AUTHORIZE") {
         const code = data.code;
         if (!code) throw new Error("Authorization failed!");
+
+        console.log("Got AUTHORIZING", code, "doing token exchange...");
 
         const form = new URLSearchParams();
         form.set("client_id", CLIENT_ID);
@@ -47,6 +50,8 @@ await client.login(CLIENT_ID);
 
         if (!res.access_token) throw new Error("Failed to get access token!");
 
+        console.log("Exchanged token", res.access_token, "sending AUTHENTICATE");
+
         await client.send(OpCode.FRAME, {
           cmd: "AUTHENTICATE",
           args: {
@@ -54,6 +59,7 @@ await client.login(CLIENT_ID);
           },
         });
       } else if (cmd === "AUTHENTICATE") {
+        console.log("Got AUTHENTICATE, sending GET_CHANNELS");
         await client.send(OpCode.FRAME, {
           cmd: "GET_CHANNELS",
           args: {},
