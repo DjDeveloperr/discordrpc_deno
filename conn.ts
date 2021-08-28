@@ -100,11 +100,11 @@ export class DiscordIPC {
   }
 
   async [_read]() {
-    if (await ipc[_ipcHandle]?.read(ipc[_header]) !== 8) return;
-    const op = ipc[_headerView].getInt32(0, true) as OpCode;
-    const payloadLength = ipc[_headerView].getInt32(4, true);
+    if (await this[_ipcHandle]?.read(this[_header]) !== 8) return;
+    const op = this[_headerView].getInt32(0, true) as OpCode;
+    const payloadLength = this[_headerView].getInt32(4, true);
     const data = new Uint8Array(payloadLength);
-    if (await ipc[_ipcHandle]?.read(data) !== payloadLength) return;
+    if (await this[_ipcHandle]?.read(data) !== payloadLength) return;
     const payload = new TextDecoder().decode(data);
     this[_emit]({ type: "frame", op, data: JSON.parse(payload) });
   }
@@ -119,6 +119,6 @@ export class DiscordIPC {
       cancel: () => {
         this[_writers].delete(ctx);
       },
-    })[Symbol.asyncIterator];
+    })[Symbol.asyncIterator]();
   }
 }
