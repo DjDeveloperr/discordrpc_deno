@@ -11,15 +11,20 @@ await client.login(CLIENT_ID);
   for await (const event of client) {
     if (event.type === "packet") {
       console.log("Packet:", OpCode[event.op], event.data);
+      const { cmd, data } = event.data;
+      if (cmd === "DISPATCH") {
+        const evt = event.evt;
+        if (evt === "READY") {
+          await client.send(OpCode.FRAME, {
+            cmd: "AUTHORIZE",
+            args: {
+              client_id: CLIENT_ID,
+              scopes: "rpc messages.read",
+              grant_type: "authorization_code",
+            },
+          });
+        }
+      }
     }
   }
 })();
-
-await client.send(OpCode.FRAME, {
-  cmd: "AUTHORIZE",
-  args: {
-    client_id: CLIENT_ID,
-    scopes: "rpc messages.read",
-    grant_type: "authorization_code",
-  },
-});
