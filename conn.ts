@@ -106,16 +106,18 @@ export class DiscordIPC {
     while(headerRead < 8) {
       const read = await this[_ipcHandle].read(this[_header].subarray(headerRead));
       if (read === null) throw new Error("Connection closed");
-      headerRead = read;
+      headerRead += read;
     }
     const op = this[_headerView].getInt32(0, true) as OpCode;
     const payloadLength = this[_headerView].getInt32(4, true);
     const data = new Uint8Array(payloadLength);
     let bodyRead = 0;
+    console.log("body to read", payloadLength);
     while (bodyRead < payloadLength) {
       const read = await this[_ipcHandle].read(data.subarray(bodyRead));
       if (read === null) throw new Error("Connection closed");
-      bodyRead = read;
+      bodyRead += read;
+      console.log("progress", bodyRead + "/" + payloadLength);
     }
     const payload = new TextDecoder().decode(data);
     this[_emit]({ type: "packet", op, data: JSON.parse(payload) });
