@@ -62,7 +62,7 @@ await client.login(CLIENT_ID);
         console.log("Got AUTHENTICATE, sending GET_CHANNELS");
         await client.send(OpCode.FRAME, {
           cmd: "GET_CHANNELS",
-          args: {},
+          args: { guild_id: "783319033205751809" },
         });
       } else if (cmd === "GET_CHANNELS") {
         console.log("Got", data.channels.length, "channels!");
