@@ -24,8 +24,8 @@ await client.login(CLIENT_ID);
             },
           });
           await client.setActivity({ details: "Deno 🦕", state: "Testing..." });
-        }
-      }
+        } else console.log("non-ready event");
+      } else console.log("non-dispatch event");
     }
   }
 })();
