@@ -2,6 +2,8 @@ import { createClient, OpCode } from "./mod.ts";
 
 const CLIENT_ID = Deno.env.get("CLIENT_ID")!;
 const CLIENT_SECRET = Deno.env.get("CLIENT_SECRET")!;
+const SCOPES = ["rpc", "messages.read"].join(" ");
+const GRANT_TYPE = "authorization_code";
 
 const client = await createClient();
 
@@ -19,11 +21,38 @@ await client.login(CLIENT_ID);
             cmd: "AUTHORIZE",
             args: {
               client_id: CLIENT_ID,
-              scopes: "rpc messages.read",
-              grant_type: "authorization_code",
+              scopes: SCOPES,
+              grant_type: GRANT_TYPE,
             },
           });
         }
+      } else if (cmd === "AUTHORIZE") {
+        const code = data.code;
+        if (!code) throw new Error("Authorization failed!");
+
+        const form = new URLSearchParams();
+        form.set("client_id", CLIENT_ID);
+        form.set("client_secret", CLIENT_SECRET);
+        form.set("scopes", SCOPES);
+        form.set("grant_type", GRANT_TYPE);
+        form.set("code", code);
+
+        const res = await fetch("https://discord.com/api/v8/oauth2/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: form.toString(),
+        }).then((r) => r.json());
+
+        if (!res.access_token) throw new Error("Failed to get access token!");
+
+        await client.send(OpCode.FRAME, {
+          cmd: "AUTHENTICATE",
+          args: {
+            access_token: res.access_token,
+          },
+        });
       }
     }
   }
