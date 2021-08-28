@@ -56,6 +56,7 @@ await client.login(CLIENT_ID);
       } else if (cmd === "AUTHENTICATE") {
         await client.send(OpCode.FRAME, {
           cmd: "GET_CHANNELS",
+          args: {},
         });
       } else if (cmd === "GET_CHANNELS") {
         console.log("Got", data.channels.length, "channels!");
