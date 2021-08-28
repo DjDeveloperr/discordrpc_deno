@@ -13,7 +13,7 @@ await client.login(CLIENT_ID);
       console.log("Packet:", OpCode[event.op], event.data);
       const { cmd, data } = event.data;
       if (cmd === "DISPATCH") {
-        const evt = data.evt;
+        const evt = event.evt;
         if (evt === "READY") {
           await client.send(OpCode.FRAME, {
             cmd: "AUTHORIZE",
@@ -24,8 +24,8 @@ await client.login(CLIENT_ID);
             },
           });
           await client.setActivity({ details: "Deno 🦕", state: "Testing..." });
-        } else console.log("non-ready event");
-      } else console.log("non-dispatch event");
+        }
+      }
     }
   }
 })();
