@@ -53,6 +53,12 @@ await client.login(CLIENT_ID);
             access_token: res.access_token,
           },
         });
+      } else if (cmd === "AUTHENTICATE") {
+        await client.send(OpCode.FRAME, {
+          cmd: "GET_CHANNELS",
+        });
+      } else if (cmd === "GET_CHANNELS") {
+        console.log("Got", data.channels.length, "channels!");
       }
     }
   }
