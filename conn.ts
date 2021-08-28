@@ -59,7 +59,7 @@ export class DiscordIPC {
   [_header]!: Uint8Array;
   [_headerView]!: DataView;
 
-  async send<T>(op: OpCode, payload: T) {
+  async send(op: OpCode, payload: any) {
     let nonce: string;
     if (
       typeof payload === "object" 
