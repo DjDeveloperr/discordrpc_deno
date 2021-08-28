@@ -13,7 +13,7 @@ await client.login(CLIENT_ID);
       console.log("Packet:", OpCode[event.op], event.data);
       const { cmd, data } = event.data;
       if (cmd === "DISPATCH") {
-        const evt = event.evt;
+        const evt = data.evt;
         if (evt === "READY") {
           await client.send(OpCode.FRAME, {
             cmd: "AUTHORIZE",
